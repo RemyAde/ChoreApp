@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, status, HTTPException, Path
 import models
 from database import engine, SessionLocal
 from typing import Annotated
@@ -25,27 +25,34 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@app.get("/chores")
+@app.get("/chores", status_code=status.HTTP_200_OK)
 async def read_chores(db: db_dependency):
-    chores_model = db.query(Chores).all()
-    return chores_model
-
-@app.get("/chores/{chore_id}")
-async def read_chore(db: db_dependency, chore_id: int):
-    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
+    chore_model = db.query(Chores).all()
     return chore_model
 
-@app.post("/chores/create")
-async def create_chore(db: db_dependency, chores_request: ChoresRequest):
-    chores_model = Chores(**chores_request.model_dump())
-
-    db.add(chores_model)
-    db.commit()
-
-@app.put("/chores/update/{chore_id}")
-async def update_chore(db: db_dependency, chore_request: ChoresRequest, chore_id: int):
+@app.get("/chores/{chore_id}", status_code=status.HTTP_200_OK)
+async def read_chore(db: db_dependency, chore_id: int = Path(gt=0)):
     chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
 
+    if chore_model is None:
+        raise HTTPException(status_code=404, detail="Chore not found")
+    
+    return chore_model
+
+@app.post("/chores/create", status_code=status.HTTP_201_CREATED)
+async def create_chore(db: db_dependency, chores_request: ChoresRequest):
+    chore_model = Chores(**chores_request.model_dump())
+
+    db.add(chore_model)
+    db.commit()
+
+@app.put("/chores/update/{chore_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_chore(db: db_dependency, chore_request: ChoresRequest, chore_id: int = Path(gt=0)):
+    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
+
+    if chore_model is None:
+        raise HTTPException(status_code=404, detail="Chore not found")
+    
     chore_model.title = chore_request.title
     chore_model.description = chore_request.description
     chore_model.priority = chore_request.priority
@@ -54,11 +61,14 @@ async def update_chore(db: db_dependency, chore_request: ChoresRequest, chore_id
     db.add(chore_model)
     db.commit()
 
-@app.delete("/chores/delete/{chore_id}")
-async def delete_chore(db: db_dependency, chore_id: int):
-    chores_model = db.query(Chores).filter(Chores.id == chore_id).first()
+@app.delete("/chores/delete/{chore_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_chore(db: db_dependency, chore_id: int = Path(gt=0)):
+    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
 
-    db.delete(chores_model)
+    if chore_model is None:
+        raise HTTPException(status_code=404, detail="Chore not found")
+
+    db.delete(chore_model)
     db.commit()
 
 
