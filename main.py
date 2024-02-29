@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field
 
 app = FastAPI()
 
+models.Base.metadata.create_all(bind=engine)
+
 
 class ChoresRequest(BaseModel):
     title: str = Field(min_length=3)
@@ -70,6 +72,3 @@ async def delete_chore(db: db_dependency, chore_id: int = Path(gt=0)):
 
     db.delete(chore_model)
     db.commit()
-
-
-models.Base.metadata.create_all(bind=engine)
