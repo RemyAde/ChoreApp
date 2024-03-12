@@ -27,14 +27,18 @@ class ChoresRequest(BaseModel):
 
 
 @router.get("/chores", status_code=status.HTTP_200_OK)
-async def read_chores(db: db_dependency):
-    chore_model = db.query(Chores).all()
+async def read_chores(user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed.')
+    chore_model = db.query(Chores).filter(Chores.owner_id == user.get('id')).all()
     return chore_model
 
 @router.get("/chores/{chore_id}", status_code=status.HTTP_200_OK)
-async def read_chore(db: db_dependency, chore_id: int = Path(gt=0)):
-    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
-
+async def read_chore(user: user_dependency, db: db_dependency, chore_id: int = Path(gt=0)):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed.')
+    
+    chore_model = db.query(Chores).filter(Chores.id == chore_id).filter(Chores.owner_id == user.get('id')).first()
     if chore_model is None:
         raise HTTPException(status_code=404, detail="Chore not found")
     
@@ -52,9 +56,12 @@ async def create_chore(user: user_dependency, db: db_dependency, chores_request:
     db.commit()
 
 @router.put("/chores/update/{chore_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_chore(db: db_dependency, chore_request: ChoresRequest, chore_id: int = Path(gt=0)):
-    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
+async def update_chore(user: user_dependency, db: db_dependency, chore_request: ChoresRequest, chore_id: int = Path(gt=0)):
 
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed.')
+    
+    chore_model = db.query(Chores).filter(Chores.id == chore_id).filter(Chores.owner_id == user.get('id')).first()
     if chore_model is None:
         raise HTTPException(status_code=404, detail="Chore not found")
     
@@ -67,8 +74,12 @@ async def update_chore(db: db_dependency, chore_request: ChoresRequest, chore_id
     db.commit()
 
 @router.delete("/chores/delete/{chore_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_chore(db: db_dependency, chore_id: int = Path(gt=0)):
-    chore_model = db.query(Chores).filter(Chores.id == chore_id).first()
+async def delete_chore(user: user_dependency, db: db_dependency, chore_id: int = Path(gt=0)):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Authentication Failed.')
+    
+    chore_model = db.query(Chores).filter(Chores.id == chore_id).filter(Chores.owner_id == user.get('id')).first()
 
     if chore_model is None:
         raise HTTPException(status_code=404, detail="Chore not found")
