@@ -24,6 +24,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 class UserRequest(BaseModel):
+    old_password: str
     new_password: str = Field(min_length=4)
     confirm_password: str = Field(min_length=4)
 
@@ -50,6 +51,9 @@ async def change_password(user: user_dependency, db: db_dependency, user_request
     if user_model is None:
         raise HTTPException(status_code=404, detail="User not Found")
     
+    if not bcrypt_context.verify(user_request.old_password, user_model.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect old password")
+
     if user_request.new_password != user_request.confirm_password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords don't match")
     
