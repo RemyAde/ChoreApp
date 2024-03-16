@@ -6,6 +6,7 @@ from database import SessionLocal
 from models import Users
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from typing import Optional
 from starlette import status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -32,6 +33,7 @@ class CreateUserRequest(BaseModel):
     last_name: str
     password: str
     role: str
+    phone_number: Optional[str]
 
 
 class Token(BaseModel):
