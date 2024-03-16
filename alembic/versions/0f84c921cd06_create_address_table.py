@@ -25,6 +25,7 @@ def upgrade() -> None:
                     sa.Column('address2', sa.String(), nullable=False),
                     sa.Column('city', sa.String(), nullable=False),
                     sa.Column('state', sa.String(), nullable=False),
+                    sa.Column('country', sa.String(), nullable=False),
                     sa.Column('postalcode', sa.String(), nullable=False))
 
 

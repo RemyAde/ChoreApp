@@ -17,7 +17,7 @@ class Users(Base):
     phone_number = Column(String)
     address_id = Column(Integer, ForeignKey("address.id"), nullable=True)
 
-    todos = relationship("Todos", back_populates="owner")
+    chores = relationship("Chores", back_populates="owner")
     address = relationship("Address", back_populates="user_address")
 
 
