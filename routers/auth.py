@@ -85,8 +85,9 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         username = create_user_request.username,
         first_name = create_user_request.first_name,
         last_name = create_user_request.last_name,
-        hashed_password = bcrypt_context.hash(create_user_request.password),
+        hashed_password = bcrypt_context.hash(create_user_request.password), #reason for not using '**create_user_request.model.dump()
         role = create_user_request.role,
+        phone_number = create_user_request.phone_number,
         is_active = True
     )
     

@@ -30,6 +30,7 @@ class Address(BaseModel):
     state: str
     country: str
     postalcode: str
+    apt_num: Optional[int]
 
 
 @router.post("/")
